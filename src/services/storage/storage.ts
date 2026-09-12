@@ -1,3 +1,8 @@
+import fs from 'fs/promises';
+import path from 'path';
+import crypto from 'crypto';
+import { STORAGE_CONFIG } from '@/config/ai';
+
 /**
  * src/services/storage/storage.ts
  * ─────────────────────────────────────────────────────────────────────────────
@@ -54,7 +59,15 @@ export interface FilePayload {
  * For production, call the object storage SDK.
  */
 export async function putFile(file: FilePayload): Promise<StoredFile> {
-  throw new StorageNotImplementedError();
+  const extension = path.extname(file.originalName) || '.bin';
+  const storageKey = `${crypto.randomUUID()}${extension}`;
+  const fullPath = path.join(STORAGE_CONFIG.localStoragePath, storageKey);
+
+  // Ensure directory exists
+  await fs.mkdir(STORAGE_CONFIG.localStoragePath, { recursive: true });
+  await fs.writeFile(fullPath, file.bytes);
+
+  return { storageKey };
 }
 
 /**
@@ -65,7 +78,8 @@ export async function putFile(file: FilePayload): Promise<StoredFile> {
  * TODO: Implement once storage provider is confirmed.
  */
 export async function getFile(storageKey: string): Promise<Buffer> {
-  throw new StorageNotImplementedError();
+  const fullPath = path.join(STORAGE_CONFIG.localStoragePath, storageKey);
+  return await fs.readFile(fullPath);
 }
 
 /**
@@ -78,5 +92,13 @@ export async function getFile(storageKey: string): Promise<Buffer> {
  * TODO: Implement once storage provider is confirmed.
  */
 export async function deleteFile(storageKey: string): Promise<void> {
-  throw new StorageNotImplementedError();
+  const fullPath = path.join(STORAGE_CONFIG.localStoragePath, storageKey);
+  try {
+    await fs.unlink(fullPath);
+  } catch (error: any) {
+    // Ignore if file doesn't exist
+    if (error.code !== 'ENOENT') {
+      throw error;
+    }
+  }
 }

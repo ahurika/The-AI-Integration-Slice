@@ -71,7 +71,7 @@ export default function UploadForm({ onJobsAccepted }: UploadFormProps) {
         return;
       }
 
-      const jobs = (data.jobs as Array<{ jobId: string }>) ?? [];
+      const jobs = (data.acceptedJobs as Array<{ jobId: string }>) ?? [];
       onJobsAccepted?.(jobs.map((j) => j.jobId));
     } catch {
       setError('A network error occurred. Please try again.');

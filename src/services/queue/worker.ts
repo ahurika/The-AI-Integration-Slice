@@ -126,31 +126,41 @@ async function processJobWithRetry(
 }
 
 /**
- * Runs the bounded worker loop.
+ * Triggers the bounded worker loop.
  *
  * Enforces WORKER_CONFIG.concurrency — the maximum number of simultaneous
  * provider calls. Jobs beyond the active limit remain pending until a slot
- * becomes available (R3-015, ARCHITECTURE.md §9).
+ * becomes available.
  *
- * SCAFFOLD: In-process bounded executor. When queue library is chosen,
- * this function will be replaced with queue-library-specific worker startup.
- *
- * TODO: Implement once queue strategy is confirmed (open question).
+ * This is an in-process bounded executor as requested by Checkpoint 2.
  */
 export async function runWorker(): Promise<void> {
-  const concurrency = WORKER_CONFIG.concurrency || 1; // Default 1 during scaffold.
-  const activeJobs = await countActiveJobs();
+  const concurrency = WORKER_CONFIG.concurrency || 1;
+  
+  while (true) {
+    const activeJobs = await countActiveJobs();
 
-  if (activeJobs >= concurrency) {
-    // Concurrency cap reached — no new slots available.
-    return;
+    if (activeJobs >= concurrency) {
+      // Concurrency cap reached — no new slots available.
+      return;
+    }
+
+    const job = await claimNextPendingJob();
+    if (!job) {
+      // No more pending jobs.
+      return;
+    }
+
+    // Process without awaiting — spawn it in the background.
+    // When the job finishes (success or failure), trigger the worker again
+    // to check for more pending jobs in the queue.
+    processJobWithRetry(job.id, job.fileAssetId, job.userId)
+      .catch((err) => {
+        console.error(`Worker error for job ${job.id}:`, err instanceof Error ? err.message : err);
+      })
+      .finally(() => {
+        // As a slot just opened up, trigger the worker again to process the next job.
+        runWorker().catch(console.error);
+      });
   }
-
-  const job = await claimNextPendingJob();
-  if (!job) return;
-
-  // Process without awaiting — caller is responsible for bounded execution.
-  processJobWithRetry(job.id, job.fileAssetId, job.userId).catch((err) => {
-    console.error(`Worker error for job ${job.id}:`, err instanceof Error ? err.message : err);
-  });
 }

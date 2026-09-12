@@ -15,8 +15,11 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { getSession } from '@/lib/auth/session';
 import { checkUploadRateLimit } from '@/src/services/rate-limit/ai';
-import { validateFiles } from '@/src/validation/files';
-import { describeValidationError } from '@/src/validation/files';
+import { validateFiles, describeValidationError } from '@/src/validation/files';
+import { putFile, deleteFile } from '@/src/services/storage/storage';
+import { createFileAsset } from '@/src/db/repositories/file-asset.repository';
+import { createJob } from '@/src/db/repositories/job.repository';
+import { runWorker } from '@/src/services/queue/worker';
 
 export async function POST(request: NextRequest): Promise<NextResponse> {
   // ── 1. Authenticate ──────────────────────────────────────────────────────
@@ -74,24 +77,59 @@ export async function POST(request: NextRequest): Promise<NextResponse> {
     );
   }
 
-  // ── 5–8. SCAFFOLD: Storage + Job creation + Worker enqueue ───────────────
-  // TODO: Implement once storage provider and queue strategy are confirmed.
-  // Steps to implement here:
-  //   5. for each file: await putFile({ originalName, mimeType, bytes })
-  //   6. await createFileAsset({ userId, storageKey, originalName, mimeType, sizeBytes })
-  //   7. await createJob(userId, fileAsset.id)
-  //   8. trigger worker (runWorker() or enqueue via queue library)
-  //
-  // On partial failure (storage succeeds, job create fails):
-  //   await deleteFile(storageKey) to clean up the orphaned object.
+  // ── 5. Storage + Job creation + Worker enqueue ───────────────
+  const acceptedJobs: { jobId: string; originalName: string }[] = [];
+  const errors: string[] = [];
+
+  for (const file of fileEntries) {
+    let storageKey = '';
+    try {
+      const bytes = Buffer.from(await file.arrayBuffer());
+      const putResult = await putFile({
+        originalName: file.name,
+        mimeType: file.type,
+        bytes,
+      });
+      storageKey = putResult.storageKey;
+
+      const fileAsset = await createFileAsset({
+        userId,
+        storageKey,
+        originalName: file.name,
+        mimeType: file.type,
+        sizeBytes: file.size,
+      });
+
+      const job = await createJob(userId, fileAsset.id);
+      acceptedJobs.push({ jobId: job.id, originalName: file.name });
+    } catch (error: any) {
+      console.error(`Failed to process upload for ${file.name}:`, error);
+      errors.push(`Failed to process ${file.name}: ${error.message}`);
+      
+      // Cleanup orphaned storage object if job creation failed
+      if (storageKey) {
+        await deleteFile(storageKey).catch((cleanupErr) => {
+          console.error(`Failed to clean up orphaned file ${storageKey}:`, cleanupErr);
+        });
+      }
+    }
+  }
+
+  // If we couldn't create any jobs, return an error
+  if (acceptedJobs.length === 0) {
+    return NextResponse.json({ error: 'Failed to process any uploaded files.', details: errors }, { status: 500 });
+  }
+
+  // Trigger the background worker without awaiting it
+  runWorker().catch((workerErr) => {
+    console.error('Failed to trigger background worker:', workerErr);
+  });
 
   return NextResponse.json(
     {
-      scaffold: true,
-      message:
-        'Upload route scaffolded. Storage and job creation will be implemented once ' +
-        'open questions (provider, storage, queue) are resolved. ' +
-        `Received ${fileEntries.length} valid file(s) for user ${userId}.`,
+      acceptedJobs,
+      errors: errors.length > 0 ? errors : undefined,
+      message: `Successfully accepted ${acceptedJobs.length} file(s) for processing.`,
     },
     { status: 202 },
   );

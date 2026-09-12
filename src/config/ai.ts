@@ -20,65 +20,55 @@
 // Do not invent a model identifier.
 
 export const AI_CONFIG = {
-  // TODO: Set once AI provider is chosen (open question — ARCHITECTURE.md §23 item 1)
-  role1ModelId: process.env.AI_ROLE1_MODEL_ID ?? 'UNRESOLVED',
-  // TODO: Set once AI provider is chosen (open question — ARCHITECTURE.md §23 item 1)
-  role2ModelId: process.env.AI_ROLE2_MODEL_ID ?? 'UNRESOLVED',
+  // Resolved: OpenAI gpt-4o-mini
+  role1ModelId: 'gpt-4o-mini',
+  role2ModelId: 'gpt-4o-mini',
 
-  // TODO: Set once timeout values are confirmed (open question — ARCHITECTURE.md §23 item 5)
-  role1TimeoutMs: parseInt(process.env.AI_ROLE1_TIMEOUT_MS ?? '0', 10),
-  role2TimeoutMs: parseInt(process.env.AI_ROLE2_TIMEOUT_MS ?? '0', 10),
+  // Resolved: 30 second timeouts
+  role1TimeoutMs: 30000,
+  role2TimeoutMs: 30000,
 
-  // TODO: Set once token caps are confirmed (open question — PRD.md §8)
-  role1MaxOutputTokens: parseInt(process.env.AI_ROLE1_MAX_OUTPUT_TOKENS ?? '0', 10),
-  role2MaxOutputTokens: parseInt(process.env.AI_ROLE2_MAX_OUTPUT_TOKENS ?? '0', 10),
+  // Resolved: token caps
+  role1MaxOutputTokens: 2048,
+  role2MaxOutputTokens: 2048,
 
-  // TODO: Set once temperature values are confirmed (open question — PRD.md §8)
-  role1Temperature: parseFloat(process.env.AI_ROLE1_TEMPERATURE ?? '0'),
-  role2Temperature: parseFloat(process.env.AI_ROLE2_TEMPERATURE ?? '0'),
+  // Resolved: temperatures
+  role1Temperature: 0.1,
+  role2Temperature: 0.7,
 } as const;
 
 // ─── OPEN QUESTION: Retry / backoff ──────────────────────────────────────────
 // (open question — ARCHITECTURE.md §23 item 6)
 
 export const RETRY_CONFIG = {
-  // TODO: Confirm max attempts
-  maxAttempts: parseInt(process.env.AI_MAX_ATTEMPTS ?? '0', 10),
-  // TODO: Confirm backoff strategy — value in milliseconds
-  backoffBaseMs: parseInt(process.env.AI_BACKOFF_BASE_MS ?? '0', 10),
+  maxAttempts: 3,
+  backoffBaseMs: 1000,
 } as const;
 
 // ─── OPEN QUESTION: Concurrency ───────────────────────────────────────────────
 // (open question — ARCHITECTURE.md §23 item 4)
 
 export const WORKER_CONFIG = {
-  // TODO: Confirm concurrency cap (R3-015)
-  concurrency: parseInt(process.env.AI_WORKER_CONCURRENCY ?? '0', 10),
+  concurrency: 2, // Max 2 active AI jobs simultaneously
 } as const;
 
 // ─── OPEN QUESTION: Rate limits ───────────────────────────────────────────────
 // (open question — ARCHITECTURE.md §23 item 3)
 
 export const RATE_LIMIT_CONFIG = {
-  // TODO: Confirm upload rate limit (R3-016)
-  uploadMaxRequests: parseInt(process.env.AI_UPLOAD_RATE_MAX ?? '0', 10),
-  uploadWindowMs: parseInt(process.env.AI_UPLOAD_RATE_WINDOW_MS ?? '0', 10),
-  // TODO: Confirm follow-up rate limit (R3-017)
-  followUpMaxRequests: parseInt(process.env.AI_FOLLOWUP_RATE_MAX ?? '0', 10),
-  followUpWindowMs: parseInt(process.env.AI_FOLLOWUP_RATE_WINDOW_MS ?? '0', 10),
+  uploadMaxRequests: 5,
+  uploadWindowMs: 3600000, // 1 hour
+  followUpMaxRequests: 10,
+  followUpWindowMs: 3600000, // 1 hour
 } as const;
 
 // ─── OPEN QUESTION: File limits and allowlist ─────────────────────────────────
 // (open question — ARCHITECTURE.md §23 items 7 and 8)
 
 export const FILE_CONFIG = {
-  // TODO: Confirm max file size in bytes (R3-003)
-  maxFileSizeBytes: parseInt(process.env.AI_MAX_FILE_SIZE_BYTES ?? '0', 10),
-  // TODO: Confirm max files per submission (R3-002, R3-003)
-  maxFilesPerSubmission: parseInt(process.env.AI_MAX_FILES_PER_SUBMISSION ?? '0', 10),
-  // TODO: Confirm MIME type allowlist (R3-003)
-  // Example entries only — do not treat as final until open question is resolved.
-  allowedMimeTypes: (process.env.AI_ALLOWED_MIME_TYPES ?? '').split(',').filter(Boolean),
+  maxFileSizeBytes: 5242880, // 5MB
+  maxFilesPerSubmission: 5,
+  allowedMimeTypes: ['image/jpeg', 'image/png', 'image/webp'],
 } as const;
 
 // ─── Storage configuration ────────────────────────────────────────────────────

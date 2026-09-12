@@ -1,5 +1,6 @@
 import { requireAuth } from '@/lib/auth/guards';
 import SignOutButton from '@/components/auth/SignOutButton';
+import Link from 'next/link';
 
 export const metadata = {
   title: 'Dashboard | Auth',
@@ -18,6 +19,12 @@ export default async function DashboardPage() {
         <p className="text-lg text-zinc-600 dark:text-zinc-400">
           You are signed in as <strong>{session.user.name}</strong>.
         </p>
+        <Link 
+          href="/ai" 
+          className="px-6 py-3 bg-blue-600 text-white rounded-md font-medium hover:bg-blue-700 transition-colors"
+        >
+          Go to AI Note Processor
+        </Link>
         <SignOutButton />
       </div>
     </main>

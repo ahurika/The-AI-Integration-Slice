@@ -19,6 +19,20 @@
  */
 
 import type { ZodType } from 'zod';
+import OpenAI from 'openai';
+import { zodResponseFormat } from 'openai/helpers/zod';
+
+// Initialize the OpenAI client lazily to avoid throwing at startup if missing in CI
+let openaiClient: OpenAI | null = null;
+function getOpenAI(): OpenAI {
+  if (!openaiClient) {
+    if (!process.env.OPENAI_API_KEY) {
+      throw new ProviderFatalError('OPENAI_API_KEY is not set in environment variables.');
+    }
+    openaiClient = new OpenAI({ apiKey: process.env.OPENAI_API_KEY });
+  }
+  return openaiClient;
+}
 
 export class ProviderNotImplementedError extends Error {
   constructor() {
@@ -81,6 +95,71 @@ export interface GenerateStructuredOutputOptions<T> {
 export async function generateStructuredOutput<T>(
   options: GenerateStructuredOutputOptions<T>,
 ): Promise<{ rawOutput: string; parsed: T }> {
-  // TODO: Remove this throw and implement with the chosen provider SDK.
-  throw new ProviderNotImplementedError();
+  const openai = getOpenAI();
+  
+  // Format the user content based on whether it is a string or an image buffer
+  const userMessageContent: OpenAI.Chat.ChatCompletionContentPart[] = [];
+  if (Buffer.isBuffer(options.userContent)) {
+    const base64Image = options.userContent.toString('base64');
+    userMessageContent.push({
+      type: 'image_url',
+      image_url: {
+        url: `data:image/jpeg;base64,${base64Image}`,
+      },
+    });
+  } else {
+    userMessageContent.push({
+      type: 'text',
+      text: options.userContent,
+    });
+  }
+
+  try {
+    const response = await openai.beta.chat.completions.parse(
+      {
+        model: options.modelId,
+        temperature: options.temperature,
+        max_tokens: options.maxOutputTokens,
+        messages: [
+          { role: 'system', content: options.systemPrompt },
+          { role: 'user', content: userMessageContent },
+        ],
+        response_format: zodResponseFormat(options.schema, 'result'),
+      },
+      { timeout: options.timeoutMs }
+    );
+
+    const choice = response.choices[0];
+    
+    // Fallback error if refusal or missing message
+    if (!choice || !choice.message) {
+      throw new ProviderTransientError('Provider returned an empty or invalid response.');
+    }
+    
+    if (choice.message.refusal) {
+      throw new ProviderFatalError(`Provider refused to process: ${choice.message.refusal}`);
+    }
+
+    if (!choice.message.parsed) {
+      throw new ProviderTransientError('Provider failed to return parsed structured output.');
+    }
+
+    return {
+      // The SDK doesn't expose the raw JSON string directly on the parsed message in all versions,
+      // but we can serialize the parsed object as a best-effort raw output for evidence.
+      rawOutput: JSON.stringify(choice.message.parsed, null, 2),
+      parsed: choice.message.parsed as T,
+    };
+  } catch (error: any) {
+    if (error instanceof ProviderFatalError || error instanceof ProviderTransientError) {
+      throw error;
+    }
+    
+    // Classify OpenAI SDK errors
+    if (error instanceof OpenAI.APIConnectionError || error instanceof OpenAI.APIConnectionTimeoutError || error.status === 429 || error.status >= 500) {
+      throw new ProviderTransientError(`Transient OpenAI error: ${error.message}`);
+    }
+    
+    throw new ProviderFatalError(`Fatal OpenAI error: ${error.message}`);
+  }
 }
