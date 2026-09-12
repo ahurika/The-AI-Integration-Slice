@@ -4,7 +4,7 @@
 
 # 1. What This Is
 
-This is a complete authentication slice built with Next.js, TypeScript, Prisma, and PostgreSQL. It takes a user from account creation through email verification, provides a forgot-password and password-reset flow, and ends at a minimal authenticated dashboard. Every security-sensitive operation — password hashing, session creation, token validation, rate limiting, and protected-route enforcement — runs on the server. The client handles presentation and user interaction only.
+This is a complete authentication slice built with Next.js, TypeScript, Prisma, and PostgreSQL. **Note: This assessment (Assessment 1) was cloned into this repository to serve as the foundation for Assessment 3 (The AI Integration Slice).** It takes a user from account creation through email verification, provides a forgot-password and password-reset flow, and ends at a minimal authenticated dashboard. Every security-sensitive operation — password hashing, session creation, token validation, rate limiting, and protected-route enforcement — runs on the server. The client handles presentation and user interaction only.
 
 This slice deliberately excludes everything that is not authentication. There is no landing page, no marketing page, no dashboard functionality, no profile editing, no settings, no social sign-in, and no two-factor authentication. The dashboard exists solely to demonstrate that an authenticated session is working: it shows the signed-in user's name and a sign-out button, nothing more. The boundary is intentional — this is an authentication assessment, not a product.
 
