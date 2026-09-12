@@ -1,0 +1,138 @@
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
+  // directUrl = env("DATABASE_URL_UNPOOLED")
+}
+
+// ─── Assessment 1: Authentication models ─────────────────────────────────────
+
+model User {
+  id               String    @id @default(uuid())
+  email            String    @unique
+  name             String
+  passwordHash     String
+  isEmailVerified  Boolean   @default(false)
+
+  sessions          Session[]
+  verificationCodes VerificationCode[]
+  passwordResets    PasswordResetToken[]
+
+  // Assessment 3: AI slice relations
+  fileAssets FileAsset[]
+  jobs       Job[]
+}
+
+model Session {
+  id        String   @id
+  userId    String
+  expiresAt DateTime
+  user      User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+}
+
+model VerificationCode {
+  id        String   @id @default(uuid())
+  code      String
+  userId    String
+  expiresAt DateTime
+  user      User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@index([userId])
+}
+
+model PasswordResetToken {
+  tokenHash String   @id
+  userId    String
+  expiresAt DateTime
+  consumed  Boolean  @default(false)
+  user      User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+}
+
+model RateLimit {
+  key       String   @id
+  points    Int      @default(0)
+  expiresAt DateTime
+}
+
+// ─── Assessment 3: AI Integration Slice models ────────────────────────────────
+
+/// Allowed job processing states (R3-005, R3-013, R3-014)
+enum JobStatus {
+  pending
+  processing
+  done
+  failed
+}
+
+/// Stores metadata for an uploaded file. File bytes live in object storage.
+/// The database record contains only the storage key and safe metadata (R3-018, R3-019).
+model FileAsset {
+  id           String   @id @default(uuid())
+  userId       String
+  storageKey   String
+  originalName String
+  mimeType     String
+  sizeBytes    Int
+
+  createdAt DateTime @default(now())
+
+  user User  @relation(fields: [userId], references: [id], onDelete: Cascade)
+  jobs Job[]
+
+  @@index([userId])
+}
+
+/// Represents one background processing unit (R3-013, R3-014).
+/// Tracks status, attempts, failure message, and ownership.
+model Job {
+  id           String    @id @default(uuid())
+  userId       String
+  fileAssetId  String
+  status       JobStatus @default(pending)
+  attempts     Int       @default(0)
+  errorMessage String?
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  user      User      @relation(fields: [userId], references: [id], onDelete: Cascade)
+  fileAsset FileAsset @relation(fields: [fileAssetId], references: [id], onDelete: Cascade)
+
+  aiResult       AiResult?
+  followUpResult FollowUpResult[]
+
+  @@index([userId])
+  @@index([status])
+}
+
+/// Stores the validated, structured output from AI Role 1 (Note Structurer).
+/// parsedResult is the application-validated value. rawOutput is evidence-only (R3-010, R3-011).
+model AiResult {
+  id            String   @id @default(uuid())
+  jobId         String   @unique
+  schemaVersion String
+  rawOutput     String?  // Evidence only — raw provider text before parsing
+  parsedResult  Json
+
+  createdAt DateTime @default(now())
+
+  job Job @relation(fields: [jobId], references: [id], onDelete: Cascade)
+}
+
+/// Stores the output of the single follow-up action: Expand notes (R3-007, R3-009).
+model FollowUpResult {
+  id            String   @id @default(uuid())
+  jobId         String
+  action        String   @default("expand")
+  schemaVersion String
+  result        Json
+
+  createdAt DateTime @default(now())
+
+  job Job @relation(fields: [jobId], references: [id], onDelete: Cascade)
+
+  @@index([jobId])
+}

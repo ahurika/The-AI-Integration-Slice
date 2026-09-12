@@ -1,0 +1,15 @@
+{
+  "name": "the-ai-integration-slice",
+  "version": "0.1.0",
+  "private": true,
+  "description": "Assessment 3 — AI Integration Slice. Run npm commands from this directory; they delegate to the Next.js app in Authentication/.",
+  "scripts": {
+    "dev": "npm --prefix Authentication run dev",
+    "build": "npm --prefix Authentication run build",
+    "start": "npm --prefix Authentication run start",
+    "typecheck": "npm --prefix Authentication run typecheck",
+    "lint": "npm --prefix Authentication run lint",
+    "install:app": "npm --prefix Authentication install",
+    "postinstall": "npm --prefix Authentication install"
+  }
+}

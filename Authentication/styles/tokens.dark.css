@@ -1,0 +1,102 @@
+/**
+ * ==========================================================================
+ * tokens.dark.css — Design System Tokens (Dark Theme)
+ * ==========================================================================
+ *
+ * DARK THEME OVERRIDES.
+ * 
+ * This file overrides the color role variables defined in tokens.css.
+ * It does NOT redefine spacing, typography, or shadow tokens — those
+ * are theme-agnostic and defined once in tokens.css.
+ * 
+ * HOW TO ACTIVATE:
+ *   Option A — HTML attribute: <html data-theme="dark">
+ *   Option B — CSS class:      <html class="dark">
+ * 
+ *   In your global CSS, also add:
+ *     @media (prefers-color-scheme: dark) {
+ *       :root { /* paste dark var overrides here */ }
+ *     }
+ * 
+ * DARK THEME STRATEGY:
+ *   Surfaces    → Darkest neutral stops (neutral 10–20)
+ *   Text        → Lightest neutral stops (neutral 90–98)
+ *   Primary     → Shifted to palette 80 for legibility on dark bg
+ *   Containers  → Progressive dark layers (neutral 20–30)
+ *   Outlines    → Lighter variant stops for visibility
+ *
+ * ⚠  AUTO-GENERATED — Do not edit manually.
+ *    Run: node design-tokens-converter.js to regenerate.
+ * ==========================================================================
+ */
+
+/* ── Apply dark theme with a data attribute ────────────────────────────── */
+/* ──────────────────────────────────────────────────────────────────────── */
+/* COLOR ROLES — DARK THEME OVERRIDES                                     */
+/* ──────────────────────────────────────────────────────────────────────── */
+
+[data-theme="dark"] {
+  --color-primary-color-role: #9bd8fd; /* Dark: primary — lightened for contrast on dark surfaces */
+  --color-on-primary-color-role: #023f64; /* Dark: on-primary — darkened so text is readable on light primary */
+  --color-primary-container-color-role: #035e96; /* Dark: primary container — uses the dark 30 stop */
+  --color-on-primary-container-color-role: #cdebfe; /* Dark: on-primary-container — light text on dark container */
+  --color-secondary-color-role: #9bd7fd; /* Dark: secondary — lightened for dark surface contrast */
+  --color-on-secondary-color-role: #023e64; /* Dark: on-secondary */
+  --color-secondary-container-color-role: #035d96; /* Dark: secondary container */
+  --color-on-secondary-container-color-role: #cdebfe; /* Dark: on-secondary-container */
+  --color-tertiary-color-role: #9bd7fd; /* Dark: tertiary */
+  --color-on-tertiary-color-role: #023e64; /* Dark: on-tertiary */
+  --color-tertiary-container-color-role: #035e96; /* Dark: tertiary container */
+  --color-on-tertiary-container-color-role: #cdebfe; /* Dark: on-tertiary-container */
+  --color-surface--color-role: #16181d; /* Dark: surface background (very dark neutral) */
+  --color-on-surface-color-role: #e2e4e9; /* Dark: text on surface (very light neutral) */
+  --color-surface-variant-color-role: #38393a; /* Dark: surface variant */
+  --color-on-surface-variant-color-role: #cbcccd; /* Dark: on surface variant */
+  --color-surface-container-highest-color-role: #424857; /* Dark: highest container (most elevated = lightest in dark) */
+  --color-surface-container-high-color-role: #2a2b2eff; /* Dark: high container */
+  --color-surface-container--color-role: #232428ff; /* Dark: base container */
+  --color-surface-container-low-color-role: #1c1d20ff; /* Dark: low container */
+  --color-surface-container-lowest-color-role: #000000; /* Dark: lowest (deepest) container — pure black */
+  --color-inverse-surface--color-role: #e2e4e9; /* Dark: inverse surface — used for toasts, snackbars */
+  --color-inverse-on-surface-color-role: #2c303a; /* Dark: text on inverse surface */
+  --color-surface-tint-color-role: #9bd8fd; /* Dark: surface tint — primary tint for elevated surfaces */
+  --color-outline-color-role: #97999b; /* Dark: outline — visible border on dark backgrounds */
+  --color-outline-variants-role: #555758; /* Dark: outline variant — subtle dividers */
+}
+
+/* ── Apply dark theme respecting OS preference ──────────────────────────── */
+/* ──────────────────────────────────────────────────────────────────────── */
+/* OS-LEVEL DARK PREFERENCE FALLBACK                                      */
+/* ──────────────────────────────────────────────────────────────────────── */
+
+@media (prefers-color-scheme: dark) {
+  :root {
+  --color-primary-color-role: #9bd8fd; /* Dark: primary — lightened for contrast on dark surfaces */
+  --color-on-primary-color-role: #023f64; /* Dark: on-primary — darkened so text is readable on light primary */
+  --color-primary-container-color-role: #035e96; /* Dark: primary container — uses the dark 30 stop */
+  --color-on-primary-container-color-role: #cdebfe; /* Dark: on-primary-container — light text on dark container */
+  --color-secondary-color-role: #9bd7fd; /* Dark: secondary — lightened for dark surface contrast */
+  --color-on-secondary-color-role: #023e64; /* Dark: on-secondary */
+  --color-secondary-container-color-role: #035d96; /* Dark: secondary container */
+  --color-on-secondary-container-color-role: #cdebfe; /* Dark: on-secondary-container */
+  --color-tertiary-color-role: #9bd7fd; /* Dark: tertiary */
+  --color-on-tertiary-color-role: #023e64; /* Dark: on-tertiary */
+  --color-tertiary-container-color-role: #035e96; /* Dark: tertiary container */
+  --color-on-tertiary-container-color-role: #cdebfe; /* Dark: on-tertiary-container */
+  --color-surface--color-role: #16181d; /* Dark: surface background (very dark neutral) */
+  --color-on-surface-color-role: #e2e4e9; /* Dark: text on surface (very light neutral) */
+  --color-surface-variant-color-role: #38393a; /* Dark: surface variant */
+  --color-on-surface-variant-color-role: #cbcccd; /* Dark: on surface variant */
+  --color-surface-container-highest-color-role: #424857; /* Dark: highest container (most elevated = lightest in dark) */
+  --color-surface-container-high-color-role: #2a2b2eff; /* Dark: high container */
+  --color-surface-container--color-role: #232428ff; /* Dark: base container */
+  --color-surface-container-low-color-role: #1c1d20ff; /* Dark: low container */
+  --color-surface-container-lowest-color-role: #000000; /* Dark: lowest (deepest) container — pure black */
+  --color-inverse-surface--color-role: #e2e4e9; /* Dark: inverse surface — used for toasts, snackbars */
+  --color-inverse-on-surface-color-role: #2c303a; /* Dark: text on inverse surface */
+  --color-surface-tint-color-role: #9bd8fd; /* Dark: surface tint — primary tint for elevated surfaces */
+  --color-outline-color-role: #97999b; /* Dark: outline — visible border on dark backgrounds */
+  --color-outline-variants-role: #555758; /* Dark: outline variant — subtle dividers */
+}
+
+}

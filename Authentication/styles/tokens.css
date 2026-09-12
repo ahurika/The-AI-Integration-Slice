@@ -1,0 +1,348 @@
+/**
+ * ==========================================================================
+ * tokens.css — Design System Tokens (Light Theme)
+ * ==========================================================================
+ *
+ * LIGHT THEME — Default token values.
+ * 
+ * HOW TO USE:
+ *   1. Import this file once in your global stylesheet or _app.tsx.
+ *   2. Apply color roles via var(--color-*) in your components.
+ *   3. NEVER use --prim-* variables directly in components.
+ * 
+ * COLOR ROLE QUICK REFERENCE:
+ *   --color-primary-color-role          Main action/brand color
+ *   --color-on-primary-color-role       Text on primary color
+ *   --color-surface--color-role         Page background
+ *   --color-on-surface-color-role       Primary text color
+ *   --color-outline-color-role          Default border color
+ *   --color-surface-container-*         Card/panel backgrounds
+ *
+ * ⚠  AUTO-GENERATED — Do not edit manually.
+ *    Run: node design-tokens-converter.js to regenerate.
+ * ==========================================================================
+ */
+
+/* ──────────────────────────────────────────────────────────────────────── */
+/* SPACING SCALE                                                          */
+/* ──────────────────────────────────────────────────────────────────────── */
+
+:root {
+  --space-no-spacing: 0px; /* no spacing */
+  --space-extra-small-spacing: 4px; /* extra small spacing */
+  --space-small-spacing: 8px; /* small spacing */
+  --space-medium-spacing: 12px; /* medium spacing */
+  --space-base-spacing: 16px; /* base spacing */
+  --space-large-spacing: 20px; /* large spacing */
+  --space-extra-large-spacing: 24px; /* extra large spacing */
+  --space-very-large-spacing: 32px; /* very large spacing */
+}
+
+/* ──────────────────────────────────────────────────────────────────────── */
+/* EFFECTS / SHADOWS                                                      */
+/* ──────────────────────────────────────────────────────────────────────── */
+
+:root {
+  --shadow-soft-shadow: 2px 2px 20px 0px rgba(0, 0, 0, 0.122); /* soft shadow — drop shadow */
+  --shadow-medium-shadow: 2px 4px 4px 0px rgba(0, 0, 0, 0.278); /* medium shadow — drop shadow */
+  --shadow-hard-shadow: 4px 6px 8px 0px rgba(0, 0, 0, 0.322); /* hard shadow — drop shadow */
+}
+
+/* ──────────────────────────────────────────────────────────────────────── */
+/* FONT STYLE TOKENS (from "font" section)                                */
+/* ──────────────────────────────────────────────────────────────────────── */
+
+:root {
+  --font-label-small-size: 11px; /* label small — font size */
+  --font-label-small-weight: 500; /* label small — font weight */
+  --font-label-small-style: normal; /* label small — font style */
+  --font-label-small-line-height: 16.5px; /* label small — line height */
+  --font-label-small-letter-spacing: -0.099px; /* label small — letter spacing */
+  --font-label-small-family: 'Inter', sans-serif; /* label small — font family */
+  --font-label-medium-size: 12px; /* label medium — font size */
+  --font-label-medium-weight: 500; /* label medium — font weight */
+  --font-label-medium-style: normal; /* label medium — font style */
+  --font-label-medium-line-height: 18px; /* label medium — line height */
+  --font-label-medium-letter-spacing: -0.108px; /* label medium — letter spacing */
+  --font-label-medium-family: 'Inter', sans-serif; /* label medium — font family */
+  --font-label-large-size: 14px; /* label large — font size */
+  --font-label-large-weight: 500; /* label large — font weight */
+  --font-label-large-style: normal; /* label large — font style */
+  --font-label-large-line-height: 21px; /* label large — line height */
+  --font-label-large-letter-spacing: -0.126px; /* label large — letter spacing */
+  --font-label-large-family: 'Inter', sans-serif; /* label large — font family */
+  --font-body-small-size: 12px; /* body small — font size */
+  --font-body-small-weight: 500; /* body small — font weight */
+  --font-body-small-style: normal; /* body small — font style */
+  --font-body-small-line-height: 18px; /* body small — line height */
+  --font-body-small-letter-spacing: -0.096px; /* body small — letter spacing */
+  --font-body-small-family: 'Inter', sans-serif; /* body small — font family */
+  --font-body-medium-size: 14px; /* body medium — font size */
+  --font-body-medium-weight: 500; /* body medium — font weight */
+  --font-body-medium-style: normal; /* body medium — font style */
+  --font-body-medium-line-height: 21px; /* body medium — line height */
+  --font-body-medium-letter-spacing: -0.112px; /* body medium — letter spacing */
+  --font-body-medium-family: 'Inter', sans-serif; /* body medium — font family */
+  --font-body-large-size: 16px; /* body large — font size */
+  --font-body-large-weight: 500; /* body large — font weight */
+  --font-body-large-style: normal; /* body large — font style */
+  --font-body-large-line-height: 24px; /* body large — line height */
+  --font-body-large-letter-spacing: -0.128px; /* body large — letter spacing */
+  --font-body-large-family: 'Inter', sans-serif; /* body large — font family */
+  --font-title-small-size: 14px; /* title small — font size */
+  --font-title-small-weight: 600; /* title small — font weight */
+  --font-title-small-style: normal; /* title small — font style */
+  --font-title-small-line-height: 21px; /* title small — line height */
+  --font-title-small-letter-spacing: -0.105px; /* title small — letter spacing */
+  --font-title-small-family: 'Inter', sans-serif; /* title small — font family */
+  --font-title-medium-size: 16px; /* title medium — font size */
+  --font-title-medium-weight: 600; /* title medium — font weight */
+  --font-title-medium-style: normal; /* title medium — font style */
+  --font-title-medium-line-height: 24px; /* title medium — line height */
+  --font-title-medium-letter-spacing: -0.136px; /* title medium — letter spacing */
+  --font-title-medium-family: 'Inter', sans-serif; /* title medium — font family */
+  --font-title-large-size: 20px; /* title large — font size */
+  --font-title-large-weight: 500; /* title large — font weight */
+  --font-title-large-style: normal; /* title large — font style */
+  --font-title-large-line-height: 30px; /* title large — line height */
+  --font-title-large-letter-spacing: -0.2px; /* title large — letter spacing */
+  --font-title-large-family: 'Inter', sans-serif; /* title large — font family */
+  --font-headline-small-size: 24px; /* headline small — font size */
+  --font-headline-small-weight: 500; /* headline small — font weight */
+  --font-headline-small-style: normal; /* headline small — font style */
+  --font-headline-small-line-height: 36px; /* headline small — line height */
+  --font-headline-small-letter-spacing: -0.24px; /* headline small — letter spacing */
+  --font-headline-small-family: 'Inter', sans-serif; /* headline small — font family */
+  --font-headline-medium-size: 28px; /* headline medium — font size */
+  --font-headline-medium-weight: 500; /* headline medium — font weight */
+  --font-headline-medium-style: normal; /* headline medium — font style */
+  --font-headline-medium-line-height: 42px; /* headline medium — line height */
+  --font-headline-medium-letter-spacing: -0.392px; /* headline medium — letter spacing */
+  --font-headline-medium-family: 'Inter', sans-serif; /* headline medium — font family */
+  --font-headline-large-size: 32px; /* headline large — font size */
+  --font-headline-large-weight: 500; /* headline large — font weight */
+  --font-headline-large-style: normal; /* headline large — font style */
+  --font-headline-large-line-height: 48px; /* headline large — line height */
+  --font-headline-large-letter-spacing: -0.48px; /* headline large — letter spacing */
+  --font-headline-large-family: 'Inter', sans-serif; /* headline large — font family */
+  --font-display-small-size: 40px; /* display small — font size */
+  --font-display-small-weight: 500; /* display small — font weight */
+  --font-display-small-style: normal; /* display small — font style */
+  --font-display-small-line-height: 60px; /* display small — line height */
+  --font-display-small-letter-spacing: -0.92px; /* display small — letter spacing */
+  --font-display-small-family: 'Inter', sans-serif; /* display small — font family */
+  --font-display-medium-size: 48px; /* display medium — font size */
+  --font-display-medium-weight: 500; /* display medium — font weight */
+  --font-display-medium-style: normal; /* display medium — font style */
+  --font-display-medium-line-height: 72px; /* display medium — line height */
+  --font-display-medium-letter-spacing: -1.44px; /* display medium — letter spacing */
+  --font-display-medium-family: 'Inter', sans-serif; /* display medium — font family */
+  --font-display-large-size: 64px; /* display large — font size */
+  --font-display-large-weight: 500; /* display large — font weight */
+  --font-display-large-style: normal; /* display large — font style */
+  --font-display-large-line-height: 96px; /* display large — line height */
+  --font-display-large-letter-spacing: -2.56px; /* display large — letter spacing */
+  --font-display-large-family: 'Inter', sans-serif; /* display large — font family */
+}
+
+/* ──────────────────────────────────────────────────────────────────────── */
+/* TYPOGRAPHY SCALE (named type scale)                                    */
+/* ──────────────────────────────────────────────────────────────────────── */
+
+:root {
+  --type-label-small-size: 11px; /* label small — font size */
+  --type-label-small-weight: 500; /* label small — font weight */
+  --type-label-small-line-height: 16.5px; /* label small — line height */
+  --type-label-small-letter-spacing: -0.099px; /* label small — letter spacing */
+  --type-label-small-family: 'Inter', sans-serif; /* label small — font family */
+  --type-label-medium-size: 12px; /* label medium — font size */
+  --type-label-medium-weight: 500; /* label medium — font weight */
+  --type-label-medium-line-height: 18px; /* label medium — line height */
+  --type-label-medium-letter-spacing: -0.108px; /* label medium — letter spacing */
+  --type-label-medium-family: 'Inter', sans-serif; /* label medium — font family */
+  --type-label-large-size: 14px; /* label large — font size */
+  --type-label-large-weight: 500; /* label large — font weight */
+  --type-label-large-line-height: 21px; /* label large — line height */
+  --type-label-large-letter-spacing: -0.126px; /* label large — letter spacing */
+  --type-label-large-family: 'Inter', sans-serif; /* label large — font family */
+  --type-body-small-size: 12px; /* body small — font size */
+  --type-body-small-weight: 500; /* body small — font weight */
+  --type-body-small-line-height: 18px; /* body small — line height */
+  --type-body-small-letter-spacing: -0.096px; /* body small — letter spacing */
+  --type-body-small-family: 'Inter', sans-serif; /* body small — font family */
+  --type-body-medium-size: 14px; /* body medium — font size */
+  --type-body-medium-weight: 500; /* body medium — font weight */
+  --type-body-medium-line-height: 21px; /* body medium — line height */
+  --type-body-medium-letter-spacing: -0.112px; /* body medium — letter spacing */
+  --type-body-medium-family: 'Inter', sans-serif; /* body medium — font family */
+  --type-body-large-size: 16px; /* body large — font size */
+  --type-body-large-weight: 500; /* body large — font weight */
+  --type-body-large-line-height: 24px; /* body large — line height */
+  --type-body-large-letter-spacing: -0.128px; /* body large — letter spacing */
+  --type-body-large-family: 'Inter', sans-serif; /* body large — font family */
+  --type-title-small-size: 14px; /* title small — font size */
+  --type-title-small-weight: 600; /* title small — font weight */
+  --type-title-small-line-height: 21px; /* title small — line height */
+  --type-title-small-letter-spacing: -0.105px; /* title small — letter spacing */
+  --type-title-small-family: 'Inter', sans-serif; /* title small — font family */
+  --type-title-medium-size: 16px; /* title medium — font size */
+  --type-title-medium-weight: 600; /* title medium — font weight */
+  --type-title-medium-line-height: 24px; /* title medium — line height */
+  --type-title-medium-letter-spacing: -0.136px; /* title medium — letter spacing */
+  --type-title-medium-family: 'Inter', sans-serif; /* title medium — font family */
+  --type-title-large-size: 20px; /* title large — font size */
+  --type-title-large-weight: 500; /* title large — font weight */
+  --type-title-large-line-height: 30px; /* title large — line height */
+  --type-title-large-letter-spacing: -0.2px; /* title large — letter spacing */
+  --type-title-large-family: 'Inter', sans-serif; /* title large — font family */
+  --type-headline-small-size: 24px; /* headline small — font size */
+  --type-headline-small-weight: 500; /* headline small — font weight */
+  --type-headline-small-line-height: 36px; /* headline small — line height */
+  --type-headline-small-letter-spacing: -0.24px; /* headline small — letter spacing */
+  --type-headline-small-family: 'Inter', sans-serif; /* headline small — font family */
+  --type-headline-medium-size: 28px; /* headline medium — font size */
+  --type-headline-medium-weight: 500; /* headline medium — font weight */
+  --type-headline-medium-line-height: 42px; /* headline medium — line height */
+  --type-headline-medium-letter-spacing: -0.392px; /* headline medium — letter spacing */
+  --type-headline-medium-family: 'Inter', sans-serif; /* headline medium — font family */
+  --type-headline-large-size: 32px; /* headline large — font size */
+  --type-headline-large-weight: 500; /* headline large — font weight */
+  --type-headline-large-line-height: 48px; /* headline large — line height */
+  --type-headline-large-letter-spacing: -0.48px; /* headline large — letter spacing */
+  --type-headline-large-family: 'Inter', sans-serif; /* headline large — font family */
+  --type-display-small-size: 40px; /* display small — font size */
+  --type-display-small-weight: 500; /* display small — font weight */
+  --type-display-small-line-height: 60px; /* display small — line height */
+  --type-display-small-letter-spacing: -0.92px; /* display small — letter spacing */
+  --type-display-small-family: 'Inter', sans-serif; /* display small — font family */
+  --type-display-medium-size: 48px; /* display medium — font size */
+  --type-display-medium-weight: 500; /* display medium — font weight */
+  --type-display-medium-line-height: 72px; /* display medium — line height */
+  --type-display-medium-letter-spacing: -1.44px; /* display medium — letter spacing */
+  --type-display-medium-family: 'Inter', sans-serif; /* display medium — font family */
+  --type-display-large-size: 64px; /* display large — font size */
+  --type-display-large-weight: 500; /* display large — font weight */
+  --type-display-large-line-height: 96px; /* display large — line height */
+  --type-display-large-letter-spacing: -2.56px; /* display large — letter spacing */
+  --type-display-large-family: 'Inter', sans-serif; /* display large — font family */
+}
+
+/* ──────────────────────────────────────────────────────────────────────── */
+/* COLOR ROLES — LIGHT THEME ✅ Use these in components                    */
+/* ──────────────────────────────────────────────────────────────────────── */
+
+:root {
+  --color-primary-color-role: #059cfa; /* Role: primary color role */
+  --color-on-primary-color-role: #ffffff; /* Role: on primary color role */
+  --color-primary-container-color-role: #035e96; /* Role: primary container color role */
+  --color-on-primary-container-color-role: #cdebfe; /* Role: on primary container color role */
+  --color-secondary-color-role: #047dc8; /* Role: secondary color role */
+  --color-on-secondary-color-role: #ffffff; /* Role: on secondary color role */
+  --color-secondary-container-color-role: #cdebfe; /* Role: secondary container color role */
+  --color-on-secondary-container-color-role: #ffffff; /* Role: on secondary container color role */
+  --color-tertiary-color-role: #37b0fb; /* Role: tertiary color role */
+  --color-on-tertiary-color-role: #ffffff; /* Role: on tertiary color role */
+  --color-tertiary-container-color-role: #cdebfe; /* Role: tertiary container color role */
+  --color-on-tertiary-container-color-role: #035e96; /* Role: on tertiary container color role */
+  --color-surface-color-role: #16181d; /* Role: surface  color role */
+  --color-on-surface-color-role: #e2e4e9; /* Role: on surface color role */
+  --color-surface-variant-color-role: #e5e5e6; /* Role: surface variant color role */
+  --color-on-surface-variant-color-role: #555758; /* Role: on surface variant color role */
+  --color-surface-container-highest-color-role: #e2e4e9; /* Role: surface container highest color role */
+  --color-surface-container-high-color-role: #e8e9ed; /* Role: surface container high color role */
+  --color-surface-container-color-role: #eeeff2; /* Role: surface container  color role */
+  --color-surface-container-low-color-role: #f3f4f6; /* Role: surface container low color role */
+  --color-surface-container-lowest-color-role: #ffffff; /* Role: surface container lowest color role */
+  --color-inverse-surface-color-role: #2c303a; /* Role: inverse surface  color role */
+  --color-inverse-on-surface-color-role: #f0f1f4; /* Role: inverse on surface color role */
+  --color-surface-tint-color-role: #047dc8; /* Role: surface tint color role */
+  --color-outline-color-role: #e5e5e6; /* Role: outline color role */
+  --color-outline-variants-role: #cbcccd; /* Role: outline variants role */
+}
+
+/* ──────────────────────────────────────────────────────────────────────── */
+/* PRIMITIVE COLORS ⚠ Internal palette — do NOT use directly in UI        */
+/* ──────────────────────────────────────────────────────────────────────── */
+
+:root {
+  --prim-key-color-primary-key-color: #059cfa; /* Primitive: key color / primary key color */
+  --prim-key-color-scondary-key-color: #047dc8; /* Primitive: key color / scondary key color */
+  --prim-key-color-teriary-key-color: #37b0fb; /* Primitive: key color / teriary key color */
+  --prim-key-color-neutral-key-color: #16181d; /* Primitive: key color / neutral key color */
+  --prim-key-color-neutral-variant-key-color: #38393a; /* Primitive: key color / neutral variant key color */
+  --prim-key-color-error-key-color: #f31c08; /* Primitive: key color / error key color */
+  --prim-primary-color-palette-primary-0: #000000; /* Primitive: primary color palette / primary  0 */
+  --prim-primary-color-palette-primary-10: #011f32; /* Primitive: primary color palette / primary  10 */
+  --prim-primary-color-palette-primary-20: #023f64; /* Primitive: primary color palette / primary  20 */
+  --prim-primary-color-palette-primary-30: #035e96; /* Primitive: primary color palette / primary  30 */
+  --prim-primary-color-palette-primary-40: #047dc8; /* Primitive: primary color palette / primary  40 */
+  --prim-primary-color-palette-primary-50: #059cfa; /* Primitive: primary color palette / primary  50 */
+  --prim-primary-color-palette-primary-60: #37b0fb; /* Primitive: primary color palette / primary  60 */
+  --prim-primary-color-palette-primary-70: #69c4fc; /* Primitive: primary color palette / primary  70 */
+  --prim-primary-color-palette-primary-80: #9bd8fd; /* Primitive: primary color palette / primary  80 */
+  --prim-primary-color-palette-primary-90: #cdebfe; /* Primitive: primary color palette / primary  90 */
+  --prim-primary-color-palette-primary-95: #e6f5fe; /* Primitive: primary color palette / primary  95 */
+  --prim-primary-color-palette-primary-98: #f5fbff; /* Primitive: primary color palette / primary  98 */
+  --prim-primary-color-palette-primary-99: #fafdff; /* Primitive: primary color palette / primary  99 */
+  --prim-primary-color-palette-primary-100: #ffffff; /* Primitive: primary color palette / primary  100 */
+  --prim-secondary-color-palette-secondary-0: #000000; /* Primitive: secondary color palette / secondary 0 */
+  --prim-secondary-color-palette-secondary-10: #011f32; /* Primitive: secondary color palette / secondary 10 */
+  --prim-secondary-color-palette-secondary-20: #023e64; /* Primitive: secondary color palette / secondary 20 */
+  --prim-secondary-color-palette-secondary-30: #035d96; /* Primitive: secondary color palette / secondary 30 */
+  --prim-secondary-color-palette-secondary-40: #047dc8; /* Primitive: secondary color palette / secondary 40 */
+  --prim-secondary-color-palette-secondary-50: #059bfa; /* Primitive: secondary color palette / secondary 50 */
+  --prim-secondary-color-palette-secondary-60: #37affb; /* Primitive: secondary color palette / secondary 60 */
+  --prim-secondary-color-palette-secondary-70: #69c3fc; /* Primitive: secondary color palette / secondary 70 */
+  --prim-secondary-color-palette-secondary-80: #9bd7fd; /* Primitive: secondary color palette / secondary 80 */
+  --prim-secondary-color-palette-secondary-90: #cdebfe; /* Primitive: secondary color palette / secondary 90 */
+  --prim-secondary-color-palette-secondary-95: #e6f5fe; /* Primitive: secondary color palette / secondary 95 */
+  --prim-secondary-color-palette-secondary-98: #f5fbff; /* Primitive: secondary color palette / secondary 98 */
+  --prim-secondary-color-palette-secondary-99: #fafdff; /* Primitive: secondary color palette / secondary 99 */
+  --prim-secondary-color-palette-secondary-100: #ffffff; /* Primitive: secondary color palette / secondary 100 */
+  --prim-tertiary-color-palette-tertiary-10: #011f32; /* Primitive: tertiary color palette / tertiary 10 */
+  --prim-tertiary-color-palette-tertiary-0: #011f32; /* Primitive: tertiary color palette / tertiary 0 */
+  --prim-tertiary-color-palette-tertiary-20: #023e64; /* Primitive: tertiary color palette / tertiary 20 */
+  --prim-tertiary-color-palette-tertiary-30: #035e96; /* Primitive: tertiary color palette / tertiary 30 */
+  --prim-tertiary-color-palette-tertiary-40: #047dc8; /* Primitive: tertiary color palette / tertiary 40 */
+  --prim-tertiary-color-palette-tertiary-50: #059cfa; /* Primitive: tertiary color palette / tertiary 50 */
+  --prim-tertiary-color-palette-tertiary-60: #37b0fb; /* Primitive: tertiary color palette / tertiary 60 */
+  --prim-tertiary-color-palette-tertiary-70: #69c4fc; /* Primitive: tertiary color palette / tertiary 70 */
+  --prim-tertiary-color-palette-tertiary-80: #9bd7fd; /* Primitive: tertiary color palette / tertiary 80 */
+  --prim-tertiary-color-palette-tertiary-90: #cdebfe; /* Primitive: tertiary color palette / tertiary 90 */
+  --prim-tertiary-color-palette-tertiary-95: #e6f5fe; /* Primitive: tertiary color palette / tertiary 95 */
+  --prim-tertiary-color-palette-tertiary-98: #f5fbff; /* Primitive: tertiary color palette / tertiary 98 */
+  --prim-tertiary-color-palette-tertiary-99: #fafdff; /* Primitive: tertiary color palette / tertiary 99 */
+  --prim-tertiary-color-palette-tertiary-100: #ffffff; /* Primitive: tertiary color palette / tertiary 100 */
+  --prim-neutral-color-palette-neutral-0: #000000; /* Primitive: neutral color palette / neutral 0 */
+  --prim-neutral-color-palette-neutral-10: #16181d; /* Primitive: neutral color palette / neutral 10 */
+  --prim-neutral-color-palette-neutral-20: #2c303a; /* Primitive: neutral color palette / neutral 20 */
+  --prim-neutral-color-palette-neutral-30: #424857; /* Primitive: neutral color palette / neutral 30 */
+  --prim-neutral-color-palette-neutral-40: #586074; /* Primitive: neutral color palette / neutral 40 */
+  --prim-neutral-color-palette-neutral-50: #6e7891; /* Primitive: neutral color palette / neutral 50 */
+  --prim-neutral-color-palette-neutral-60: #8b93a7; /* Primitive: neutral color palette / neutral 60 */
+  --prim-neutral-color-palette-neutral-70: #a8aebd; /* Primitive: neutral color palette / neutral 70 */
+  --prim-neutral-color-palette-neutral-80: #c5c9d3; /* Primitive: neutral color palette / neutral 80 */
+  --prim-neutral-color-palette-neutral-90: #e2e4e9; /* Primitive: neutral color palette / neutral 90 */
+  --prim-neutral-color-palette-neutral-95: #f0f1f4; /* Primitive: neutral color palette / neutral 95 */
+  --prim-neutral-color-palette-neutral-98: #f9fafb; /* Primitive: neutral color palette / neutral 98 */
+  --prim-neutral-color-palette-neutral-99: #fcfcfd; /* Primitive: neutral color palette / neutral 99 */
+  --prim-neutral-color-palette-neutral-100: #ffffff; /* Primitive: neutral color palette / neutral 100 */
+  --prim-neutral-variant-palette-neutral-variant-0: #000000; /* Primitive: neutral variant palette / neutral variant 0 */
+  --prim-neutral-variant-palette-neutral-variant-10: #191a1a; /* Primitive: neutral variant palette / neutral variant 10 */
+  --prim-neutral-variant-palette-neutral-variant-20: #38393a; /* Primitive: neutral variant palette / neutral variant 20 */
+  --prim-neutral-variant-palette-neutral-variant-30: #555758; /* Primitive: neutral variant palette / neutral variant 30 */
+  --prim-neutral-variant-palette-neutral-variant-40: #646668; /* Primitive: neutral variant palette / neutral variant 40 */
+  --prim-neutral-variant-palette-neutral-variant-50: #7d8082; /* Primitive: neutral variant palette / neutral variant 50 */
+  --prim-neutral-variant-palette-neutral-variant-60: #97999b; /* Primitive: neutral variant palette / neutral variant 60 */
+  --prim-neutral-variant-palette-neutral-variant-70: #b1b2b4; /* Primitive: neutral variant palette / neutral variant 70 */
+  --prim-neutral-variant-palette-neutral-variant-80: #cbcccd; /* Primitive: neutral variant palette / neutral variant 80 */
+  --prim-neutral-variant-palette-neutral-variant-90: #e5e5e6; /* Primitive: neutral variant palette / neutral variant 90 */
+  --prim-neutral-variant-palette-neutral-variant-95: #f2f2f2; /* Primitive: neutral variant palette / neutral variant 95 */
+  --prim-neutral-variant-palette-neutral-variant-98: #fafafa; /* Primitive: neutral variant palette / neutral variant 98 */
+  --prim-neutral-variant-palette-neutral-variant-99: #fcfcfc; /* Primitive: neutral variant palette / neutral variant 99 */
+  --prim-neutral-variant-palette-neutral-variant-100: #ffffff; /* Primitive: neutral variant palette / neutral variant 100 */
+}
+
+/* Google Fonts import — Inter (used by all typography tokens) */
+/* Add this to your HTML <head> or global CSS: */
+/* @import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600&display=swap'); */
