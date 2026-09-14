@@ -1,166 +1,141 @@
-/**
- * src/services/queue/worker.ts
- * ─────────────────────────────────────────────────────────────────────────────
- * Background worker for AI job processing (R3-004, R3-013, R3-014, R3-015).
- *
- * OPEN QUESTIONS:
- *   - Queue implementation strategy: library (BullMQ/Redis, pg-boss) or
- *     bounded in-process executor? (ARCHITECTURE.md §23 item 3)
- *   - Concurrency cap value (ARCHITECTURE.md §23 item 4)
- *
- * Worker responsibilities (AGENTS.md §8, ARCHITECTURE.md §8):
- *   1. Claim a pending job atomically.
- *   2. Update status to processing, increment attempts.
- *   3. Load the stored file from storage.
- *   4. Call Role 1 with timeout.
- *   5. Validate output against application schema.
- *   6. Retry recoverable failures within configured limit.
- *   7. Persist failure when attempts exhausted.
- *   8. Persist validated success.
- *   9. Mark job done only after successful validation and persistence.
- *
- * SCAFFOLD: processJob() is fully defined but will throw StorageNotImplementedError
- * and ProviderNotImplementedError from their respective services until providers
- * are resolved. The processing logic structure is correct.
- * ─────────────────────────────────────────────────────────────────────────────
- */
+import { prisma } from '@/lib/db/prisma';
+import { GoogleGenerativeAI } from '@google/generative-ai';
+import { z } from 'zod';
+import * as fs from 'fs/promises';
+import * as path from 'path';
 
-import {
-  claimNextPendingJob,
-  markJobDone,
-  markJobFailed,
-  markJobProcessing,
-  createAiResult,
-  countActiveJobs,
-} from '@/src/db/repositories/job.repository';
-import { getFile } from '@/src/services/storage/storage';
-import { runNoteStructurer } from '@/src/services/ai/roles/note-structurer';
-import { StructuredNotesSchema, STRUCTURED_NOTES_SCHEMA_VERSION } from '@/src/domain/ai/schemas';
-import { ProviderTransientError } from '@/src/services/ai/provider';
-import { WORKER_CONFIG, RETRY_CONFIG } from '@/src/config/ai';
-import { findFileAssetByIdForUser } from '@/src/db/repositories/file-asset.repository';
+// Zod schema for structured output validation
+const noteSchema = z.object({
+  title: z.string(),
+  content: z.string(),
+  tags: z.array(z.string()),
+});
 
-/**
- * Processes a single job through the full AI pipeline.
- *
- * Called by the worker executor once a job is claimed.
- * Not exposed as an HTTP endpoint.
- */
-async function processJob(jobId: string, fileAssetId: string, userId: string): Promise<void> {
-  // Load file bytes from storage using the stored key.
-  // Throws StorageNotImplementedError in scaffold state.
-  const fileAsset = await findFileAssetByIdForUser(fileAssetId, userId);
-  if (!fileAsset) {
-    await markJobFailed(jobId, 'FileAsset not found for this job.');
-    return;
-  }
-
-  const fileBytes = await getFile(fileAsset.storageKey);
-
-  // Call Role 1 — throws ProviderNotImplementedError in scaffold state.
-  const role1Output = await runNoteStructurer({ fileContent: fileBytes });
-
-  // Application-side schema validation — separate from provider-level request.
-  const parseResult = StructuredNotesSchema.safeParse(role1Output.parsed);
-
-  if (!parseResult.success) {
-    // Validation failure — treated as a potentially retryable failure.
-    throw new ProviderTransientError(
-      `Role 1 output failed application schema validation: ${parseResult.error.message}`,
-    );
-  }
-
-  // Persist the validated result and mark done.
-  await createAiResult({
-    jobId,
-    schemaVersion: STRUCTURED_NOTES_SCHEMA_VERSION,
-    rawOutput: role1Output.rawOutput,
-    parsedResult: parseResult.data,
-  });
-
-  await markJobDone(jobId);
+// Configure Google Gen AI SDK
+if (!process.env.GEMINI_API_KEY) {
+  throw new Error('GEMINI_API_KEY is not set in environment variables. Please add it to your .env file.');
 }
+const genAI = new GoogleGenerativeAI(process.env.GEMINI_API_KEY);
 
-/**
- * Attempts to process a job with retry logic.
- *
- * Retry policy (ARCHITECTURE.md §14):
- *   - Only ProviderTransientError is retried.
- *   - Retries are bounded by RETRY_CONFIG.maxAttempts.
- *   - Each attempt increments Job.attempts.
- *   - Exhausted attempts → job marked failed with error message.
- *
- * TODO: Add backoff delay once RETRY_CONFIG.backoffBaseMs is confirmed.
- */
-async function processJobWithRetry(
-  jobId: string,
-  fileAssetId: string,
-  userId: string,
-): Promise<void> {
-  const maxAttempts = RETRY_CONFIG.maxAttempts || 1; // Default 1 during scaffold.
+// Initialize the models (Role 1 and Role 2)
+const extractorModel = genAI.getGenerativeModel({ model: 'gemini-1.5-flash-latest' });
+const categorizerModel = genAI.getGenerativeModel({ model: 'gemini-1.5-flash-latest' });
 
-  for (let attempt = 1; attempt <= maxAttempts; attempt++) {
-    await markJobProcessing(jobId);
+// System prompts for roles
+const EXTRACTOR_SYSTEM_PROMPT = "You are an OCR Extractor. Extract the handwritten text from the image exactly as written. Do not summarize.";
+const CATEGORIZER_SYSTEM_PROMPT = "You are a Note Structurer. Parse the raw text of the handwritten note into the following JSON schema: { \"title\": \"string\", \"content\": \"string\", \"tags\": [\"string\"] }. Return ONLY valid JSON.";
 
+export async function processJob(jobId: string) {
+  try {
+    // 1. Mark job as processing
+    await prisma.job.update({
+      where: { id: jobId },
+      data: { status: 'processing', attempts: { increment: 1 } },
+    });
+
+    const job = await prisma.job.findUnique({
+      where: { id: jobId },
+      include: { fileAsset: true },
+    });
+
+    if (!job || !job.fileAsset) {
+      throw new Error("Job or FileAsset not found");
+    }
+
+    // 2. Read file from local "object storage"
+    const filePath = path.join(process.cwd(), 'uploads', job.fileAsset.storageKey);
+    const fileBytes = await fs.readFile(filePath);
+    
+    // Convert to base64 for Gemini
+    const base64Data = fileBytes.toString('base64');
+    const imagePart = {
+      inlineData: {
+        data: base64Data,
+        mimeType: job.fileAsset.mimeType
+      }
+    };
+
+    // 3. Role 1: OCR Extraction
+    const extractorResult = await extractorModel.generateContent({
+      contents: [{ role: 'user', parts: [imagePart] }],
+      systemInstruction: EXTRACTOR_SYSTEM_PROMPT,
+      generationConfig: {
+        maxOutputTokens: 2048,
+        temperature: 0.1
+      }
+    });
+
+    const extractedText = extractorResult.response.text();
+    if (!extractedText) throw new Error("Failed to extract text from image");
+
+    // 4. Role 2: Categorization (Structured Output)
+    const categorizerResult = await categorizerModel.generateContent({
+      contents: [{ role: 'user', parts: [{ text: extractedText }] }],
+      systemInstruction: CATEGORIZER_SYSTEM_PROMPT,
+      generationConfig: {
+        maxOutputTokens: 1024,
+        temperature: 0.1,
+        responseMimeType: "application/json"
+      }
+    });
+
+    const categorizedJson = categorizerResult.response.text();
+    
+    // 5. Validation using schema
+    let parsedResult;
     try {
-      await processJob(jobId, fileAssetId, userId);
-      return; // Success — done.
-    } catch (err) {
-      const isRetryable = err instanceof ProviderTransientError;
-      const attemptsRemaining = maxAttempts - attempt;
-
-      if (!isRetryable || attemptsRemaining === 0) {
-        const message = err instanceof Error ? err.message : 'Unknown error';
-        await markJobFailed(jobId, `Processing failed after ${attempt} attempt(s): ${message}`);
-        return;
-      }
-
-      // Retryable failure — wait backoff before next attempt.
-      if (RETRY_CONFIG.backoffBaseMs > 0) {
-        await new Promise((resolve) =>
-          setTimeout(resolve, RETRY_CONFIG.backoffBaseMs * attempt),
-        );
-      }
-    }
-  }
-}
-
-/**
- * Triggers the bounded worker loop.
- *
- * Enforces WORKER_CONFIG.concurrency — the maximum number of simultaneous
- * provider calls. Jobs beyond the active limit remain pending until a slot
- * becomes available.
- *
- * This is an in-process bounded executor as requested by Checkpoint 2.
- */
-export async function runWorker(): Promise<void> {
-  const concurrency = WORKER_CONFIG.concurrency || 1;
-  
-  while (true) {
-    const activeJobs = await countActiveJobs();
-
-    if (activeJobs >= concurrency) {
-      // Concurrency cap reached — no new slots available.
-      return;
+      const parsedData = JSON.parse(categorizedJson);
+      parsedResult = noteSchema.parse(parsedData);
+    } catch (e: any) {
+      throw new Error(`Validation failed on AI output: ${e.message}`);
     }
 
-    const job = await claimNextPendingJob();
-    if (!job) {
-      // No more pending jobs.
-      return;
-    }
-
-    // Process without awaiting — spawn it in the background.
-    // When the job finishes (success or failure), trigger the worker again
-    // to check for more pending jobs in the queue.
-    processJobWithRetry(job.id, job.fileAssetId, job.userId)
-      .catch((err) => {
-        console.error(`Worker error for job ${job.id}:`, err instanceof Error ? err.message : err);
+    // 6. Save result
+    await prisma.$transaction([
+      prisma.job.update({
+        where: { id: jobId },
+        data: { status: 'done', errorMessage: null },
+      }),
+      prisma.aiResult.create({
+        data: {
+          jobId: jobId,
+          schemaVersion: '1.0',
+          rawOutput: extractedText,
+          parsedResult: parsedResult as any,
+        }
       })
-      .finally(() => {
-        // As a slot just opened up, trigger the worker again to process the next job.
-        runWorker().catch(console.error);
-      });
+    ]);
+
+  } catch (error: any) {
+    console.error(`Job ${jobId} failed:`, error);
+    await prisma.job.update({
+      where: { id: jobId },
+      data: { status: 'failed', errorMessage: error.message },
+    });
   }
 }
+
+let isPolling = false;
+export function startQueuePoller() {
+  if (isPolling) return;
+  isPolling = true;
+
+  setInterval(async () => {
+    const processingCount = await prisma.job.count({ where: { status: 'processing' } });
+    if (processingCount >= 3) return;
+
+    const job = await prisma.job.findFirst({
+      where: { status: 'pending' },
+      orderBy: { createdAt: 'asc' }
+    });
+
+    if (job) {
+      processJob(job.id);
+    }
+  }, 5000);
+}
+
+export function runWorker() {
+  startQueuePoller();
+}
+

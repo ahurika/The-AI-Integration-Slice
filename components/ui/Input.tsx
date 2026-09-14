@@ -49,7 +49,7 @@ const Input = forwardRef<HTMLInputElement, InputProps>(
               type="button"
               onClick={() => setShowPassword((prev) => !prev)}
               tabIndex={-1}
-              className="absolute right-2.5 top-1/2 -translate-y-1/2 text-xs font-medium text-zinc-500 hover:text-zinc-700 dark:text-zinc-400 dark:hover:text-zinc-200 select-none px-1 py-0.5"
+              className="absolute right-2.5 top-1/2 -translate-y-1/2 text-xs font-medium text-zinc-500 hover:text-zinc-700 dark:text-zinc-400 dark:hover:text-zinc-200 select-none px-1 py-0.5 z-10 cursor-pointer"
               aria-label={showPassword ? 'Hide password' : 'Show password'}
             >
               {showPassword ? 'Hide' : 'Show'}

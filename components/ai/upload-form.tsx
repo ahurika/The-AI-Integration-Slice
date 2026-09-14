@@ -25,13 +25,35 @@ export default function UploadForm({ onJobsAccepted }: UploadFormProps) {
   const [submitting, setSubmitting] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const [scaffoldMessage, setScaffoldMessage] = useState<string | null>(null);
+  const [isDragActive, setIsDragActive] = useState(false);
   const inputRef = useRef<HTMLInputElement>(null);
 
   function handleFileChange(e: React.ChangeEvent<HTMLInputElement>) {
     setError(null);
     setScaffoldMessage(null);
     const selected = Array.from(e.target.files ?? []);
-    setFiles(selected);
+    if (selected.length > 0) setFiles(selected);
+  }
+
+  function handleDragOver(e: React.DragEvent) {
+    e.preventDefault();
+    setIsDragActive(true);
+  }
+
+  function handleDragLeave(e: React.DragEvent) {
+    e.preventDefault();
+    setIsDragActive(false);
+  }
+
+  function handleDrop(e: React.DragEvent) {
+    e.preventDefault();
+    setIsDragActive(false);
+    setError(null);
+    setScaffoldMessage(null);
+    const selected = Array.from(e.dataTransfer.files ?? []);
+    if (selected.length > 0) {
+      setFiles(selected);
+    }
   }
 
   async function handleSubmit(e: React.FormEvent) {
@@ -82,14 +104,21 @@ export default function UploadForm({ onJobsAccepted }: UploadFormProps) {
 
   return (
     <form onSubmit={handleSubmit} aria-label="Upload handwritten notes">
-      <div>
-        {/* Accessible file input with explicit label (R3-016 UI rules) */}
-        <label htmlFor="file-upload-input">
-          Select handwritten note files
-        </label>
+      <div 
+        className={`ai-dropzone ${isDragActive ? 'drag-active' : ''}`}
+        onDragOver={handleDragOver}
+        onDragLeave={handleDragLeave}
+        onDrop={handleDrop}
+      >
+        <span className="ai-dropzone-icon">📝</span>
+        <div className="ai-dropzone-text">
+          {isDragActive ? 'Drop your files here...' : 'Click or drag files here'}
+        </div>
+        <div className="ai-dropzone-hint">Supports JPEG, PNG, WEBP, and PDF</div>
         <input
           id="file-upload-input"
           ref={inputRef}
+          className="ai-file-input"
           type="file"
           multiple
           accept="image/*,application/pdf"
@@ -100,34 +129,43 @@ export default function UploadForm({ onJobsAccepted }: UploadFormProps) {
       </div>
 
       {files.length > 0 && (
-        <ul aria-label="Selected files">
-          {files.map((f) => (
-            <li key={f.name}>
-              {f.name} ({(f.size / 1024).toFixed(1)} KB)
+        <ul className="ai-file-list" aria-label="Selected files">
+          {files.map((f, i) => (
+            <li key={`${f.name}-${i}`} className="ai-file-item" style={{ animationDelay: `${i * 0.1}s` }}>
+              <span className="ai-file-name" title={f.name}>{f.name}</span>
+              <span className="ai-file-size">{(f.size / 1024).toFixed(1)} KB</span>
             </li>
           ))}
         </ul>
       )}
 
       {error && (
-        <p id="upload-error" role="alert" aria-live="assertive">
+        <div id="upload-error" className="ai-error" role="alert" aria-live="assertive">
           {error}
-        </p>
+        </div>
       )}
 
       {scaffoldMessage && (
-        <p role="status" aria-live="polite" style={{ color: 'orange' }}>
-          [SCAFFOLD] {scaffoldMessage}
-        </p>
+        <div className="ai-scaffold-msg" role="status" aria-live="polite">
+          <strong>Note:</strong> {scaffoldMessage}
+        </div>
       )}
 
       <button
         id="upload-submit-btn"
+        className="ai-submit-btn"
         type="submit"
         disabled={submitting || files.length === 0}
         aria-busy={submitting}
       >
-        {submitting ? 'Uploading…' : 'Upload notes'}
+        {submitting ? (
+          <>
+            <span className="ai-loading-spinner"></span>
+            Processing your notes...
+          </>
+        ) : (
+          'Extract Text with AI'
+        )}
       </button>
     </form>
   );

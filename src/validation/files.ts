@@ -66,7 +66,7 @@ export function validateFiles(files: FileInput[]): ValidationResult {
     // MIME type check
     if (
       FILE_CONFIG.allowedMimeTypes.length > 0 &&
-      !FILE_CONFIG.allowedMimeTypes.includes(file.mimeType)
+      !FILE_CONFIG.allowedMimeTypes.includes(file.mimeType as any)
     ) {
       errors.push({
         code: 'INVALID_MIME_TYPE',

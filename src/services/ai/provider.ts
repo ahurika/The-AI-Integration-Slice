@@ -115,7 +115,7 @@ export async function generateStructuredOutput<T>(
   }
 
   try {
-    const response = await openai.beta.chat.completions.parse(
+    const response = await (openai.beta as any).chat.completions.parse(
       {
         model: options.modelId,
         temperature: options.temperature,

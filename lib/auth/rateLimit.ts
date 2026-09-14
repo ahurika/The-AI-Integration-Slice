@@ -48,6 +48,8 @@ const LIMITS: Record<string, RateLimitConfig> = {
   signup:  { maxPoints: 3,  windowMs: 60 * 60 * 1000 },  // 3 per hour
   reset:   { maxPoints: 3,  windowMs: 60 * 60 * 1000 },  // 3 per hour
   resend:  { maxPoints: 3,  windowMs: 60 * 60 * 1000 },  // 3 per hour
+  upload:  { maxPoints: 50, windowMs: 60 * 60 * 1000 },
+  followup:{ maxPoints: 50, windowMs: 60 * 60 * 1000 },
 };
 
 /**

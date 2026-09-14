@@ -1,0 +1,227 @@
+/* app/ai/ai.css */
+@import url('https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap');
+
+:root {
+  --ai-primary: #6366f1;
+  --ai-primary-hover: #4f46e5;
+  --ai-secondary: #ec4899;
+  --ai-bg-dark: #0f172a;
+  --ai-surface: rgba(30, 41, 59, 0.7);
+  --ai-surface-border: rgba(255, 255, 255, 0.1);
+  --ai-text: #f8fafc;
+  --ai-text-muted: #94a3b8;
+  --ai-danger: #ef4444;
+  --ai-success: #10b981;
+}
+
+body {
+  background-color: var(--ai-bg-dark);
+  background-image: radial-gradient(circle at top right, rgba(99, 102, 241, 0.15), transparent 40%),
+                    radial-gradient(circle at bottom left, rgba(236, 72, 153, 0.15), transparent 40%);
+  background-attachment: fixed;
+  color: var(--ai-text);
+  font-family: 'Inter', sans-serif;
+  min-height: 100vh;
+  margin: 0;
+}
+
+.ai-page-container {
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  min-height: 100vh;
+  padding: 2rem;
+}
+
+.ai-card {
+  background: var(--ai-surface);
+  backdrop-filter: blur(16px);
+  -webkit-backdrop-filter: blur(16px);
+  border: 1px solid var(--ai-surface-border);
+  border-radius: 24px;
+  padding: 3rem;
+  width: 100%;
+  max-width: 600px;
+  box-shadow: 0 25px 50px -12px rgba(0, 0, 0, 0.5);
+  animation: slideUp 0.6s cubic-bezier(0.16, 1, 0.3, 1) forwards;
+  opacity: 0;
+  transform: translateY(20px);
+}
+
+.ai-title {
+  font-size: 2.25rem;
+  font-weight: 700;
+  margin-bottom: 0.5rem;
+  background: linear-gradient(to right, #a78bfa, #f472b6);
+  -webkit-background-clip: text;
+  -webkit-text-fill-color: transparent;
+  letter-spacing: -0.02em;
+}
+
+.ai-subtitle {
+  color: var(--ai-text-muted);
+  font-size: 1.1rem;
+  margin-bottom: 2.5rem;
+  font-weight: 300;
+  line-height: 1.6;
+}
+
+.ai-dropzone {
+  border: 2px dashed var(--ai-surface-border);
+  border-radius: 16px;
+  padding: 3rem 2rem;
+  text-align: center;
+  transition: all 0.3s ease;
+  cursor: pointer;
+  background: rgba(15, 23, 42, 0.4);
+  position: relative;
+  overflow: hidden;
+}
+
+.ai-dropzone:hover, .ai-dropzone.drag-active {
+  border-color: var(--ai-primary);
+  background: rgba(99, 102, 241, 0.05);
+}
+
+.ai-dropzone-icon {
+  font-size: 3rem;
+  margin-bottom: 1rem;
+  opacity: 0.8;
+  display: block;
+}
+
+.ai-dropzone-text {
+  font-size: 1.1rem;
+  font-weight: 500;
+  margin-bottom: 0.5rem;
+  color: var(--ai-text);
+}
+
+.ai-dropzone-hint {
+  font-size: 0.9rem;
+  color: var(--ai-text-muted);
+}
+
+.ai-file-input {
+  position: absolute;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+  opacity: 0;
+  cursor: pointer;
+}
+
+.ai-file-list {
+  margin-top: 2rem;
+  list-style: none;
+  padding: 0;
+}
+
+.ai-file-item {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  background: rgba(255, 255, 255, 0.03);
+  border: 1px solid var(--ai-surface-border);
+  padding: 1rem 1.25rem;
+  border-radius: 12px;
+  margin-bottom: 0.75rem;
+  animation: fadeIn 0.4s ease forwards;
+}
+
+.ai-file-name {
+  font-weight: 500;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  max-width: 70%;
+}
+
+.ai-file-size {
+  color: var(--ai-text-muted);
+  font-size: 0.85rem;
+}
+
+.ai-error {
+  background: rgba(239, 68, 68, 0.1);
+  border-left: 4px solid var(--ai-danger);
+  color: #fca5a5;
+  padding: 1rem;
+  border-radius: 8px;
+  margin-top: 1.5rem;
+  font-size: 0.95rem;
+  animation: shake 0.5s cubic-bezier(.36,.07,.19,.97) both;
+}
+
+.ai-scaffold-msg {
+  background: rgba(245, 158, 11, 0.1);
+  border-left: 4px solid #f59e0b;
+  color: #fcd34d;
+  padding: 1rem;
+  border-radius: 8px;
+  margin-top: 1.5rem;
+  font-size: 0.95rem;
+}
+
+.ai-submit-btn {
+  width: 100%;
+  padding: 1rem;
+  border: none;
+  border-radius: 12px;
+  background: linear-gradient(135deg, var(--ai-primary), var(--ai-secondary));
+  color: white;
+  font-size: 1.1rem;
+  font-weight: 600;
+  cursor: pointer;
+  margin-top: 2rem;
+  transition: all 0.3s ease;
+  box-shadow: 0 4px 14px 0 rgba(99, 102, 241, 0.39);
+}
+
+.ai-submit-btn:hover:not(:disabled) {
+  transform: translateY(-2px);
+  box-shadow: 0 6px 20px rgba(99, 102, 241, 0.5);
+}
+
+.ai-submit-btn:disabled {
+  opacity: 0.6;
+  cursor: not-allowed;
+  transform: none;
+}
+
+.ai-loading-spinner {
+  display: inline-block;
+  width: 20px;
+  height: 20px;
+  border: 3px solid rgba(255,255,255,0.3);
+  border-radius: 50%;
+  border-top-color: white;
+  animation: spin 1s ease-in-out infinite;
+  vertical-align: middle;
+  margin-right: 10px;
+}
+
+/* Animations */
+@keyframes slideUp {
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+@keyframes fadeIn {
+  from { opacity: 0; transform: translateY(10px); }
+  to { opacity: 1; transform: translateY(0); }
+}
+
+@keyframes spin {
+  to { transform: rotate(360deg); }
+}
+
+@keyframes shake {
+  10%, 90% { transform: translate3d(-1px, 0, 0); }
+  20%, 80% { transform: translate3d(2px, 0, 0); }
+  30%, 50%, 70% { transform: translate3d(-4px, 0, 0); }
+  40%, 60% { transform: translate3d(4px, 0, 0); }
+}

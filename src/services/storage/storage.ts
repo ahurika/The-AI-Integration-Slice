@@ -1,7 +1,7 @@
 import fs from 'fs/promises';
 import path from 'path';
 import crypto from 'crypto';
-import { STORAGE_CONFIG } from '@/config/ai';
+import { STORAGE_CONFIG } from '@/src/config/ai';
 
 /**
  * src/services/storage/storage.ts

@@ -13,6 +13,7 @@
 
 import { requireAuth } from '@/lib/auth/guards';
 import UploadForm from '@/components/ai/upload-form';
+import './ai.css';
 
 export const metadata = {
   title: 'Upload Notes — AI Integration Slice',
@@ -23,17 +24,14 @@ export default async function AiUploadPage() {
   const session = await requireAuth();
 
   return (
-    <main>
-      <h1>Upload handwritten notes</h1>
-      <p>
-        Welcome, {session.user.name}. Select one or more handwritten note files to process.
-      </p>
-
-      {/* SCAFFOLD NOTE:
-          UploadForm submits to POST /api/ai/upload.
-          Jobs will redirect to /ai/jobs/[jobId] once storage is implemented.
-          Currently returns a scaffold 202 response. */}
-      <UploadForm />
-    </main>
+    <div className="ai-page-container">
+      <main className="ai-card">
+        <h1 className="ai-title">Process Handwritten Notes</h1>
+        <p className="ai-subtitle">
+          Welcome back, {session.user.name}. Select or drag & drop one or more handwritten note files to process.
+        </p>
+        <UploadForm />
+      </main>
+    </div>
   );
 }

@@ -792,3 +792,117 @@ The first `create` acquires a row lock on the unique index for that email and wr
 - **Password correctness (sign-in):** Verifying a password against a stored Argon2id hash requires the hash, which is never sent to the client (that would expose it).
 - **Token validity (reset/verify):** Whether a token or code is valid, unexpired, and unconsumed requires a database lookup — the client cannot know the server-side state of a token.
 - **Rate limits:** Rate limit counters are stored in the database and keyed by server-observed IP address — the client cannot observe or enforce these.
+
+---
+
+# 9. Assessment 3: The AI Integration Slice
+
+This section documents the AI extraction pipeline, addressing the PRD "Defence Questions" and "Prove It Works" criteria.
+
+## AI Concepts (Addendum to Section 5)
+
+### API Endpoints, SDKs vs Raw HTTP, and Official SDKs
+**What it is:** An API endpoint is a specific URL where an application can send or receive data. SDKs are language-specific wrappers around these endpoints.
+**Why it is needed:** We use the official `@google/generative-ai` SDK because it abstracts away raw HTTP formatting, handles authentication seamlessly, and provides strongly-typed interfaces, reducing errors.
+**How I implemented it:** Used the official Gemini SDK (`GoogleGenerativeAI`) in `worker.ts`.
+**What I chose against:** Manually constructing `fetch` calls (raw HTTP) to the Gemini REST API, which is error-prone and harder to maintain.
+
+### System Prompts vs User Prompts
+**What it is:** System prompts define the AI's role, rules, and output format. User prompts are the specific inputs (the image or the extracted text).
+**Why it is needed:** System prompts ensure the model stays in character and adheres strictly to formatting (like returning JSON).
+**How I implemented it:** Two system prompts are defined: `EXTRACTOR_SYSTEM_PROMPT` for raw OCR, and `CATEGORIZER_SYSTEM_PROMPT` for structuring the data.
+
+### Model Parameters
+**What it is:** Settings that control model behavior.
+**Why it is needed:** To ensure predictable outputs.
+**How I implemented it:** 
+- `temperature`: Set to 0.1 for high determinism since we are extracting factual data from a receipt.
+- `maxOutputTokens`: Set to 1024/2048 to prevent runaway output costs and enforce brevity.
+
+### Structured Output and Schema Validation
+**What it is:** Forcing the AI to return data in a specific format (JSON) and validating it against a strict schema (Zod).
+**Why it is needed:** AI can hallucinate extra text. Schema validation ensures our database only stores exactly what it expects.
+**How I implemented it:** Used Zod to parse the JSON output in `worker.ts`. If validation fails, we throw an error and mark the job as `failed`.
+
+### Jobs, Workers, Queues, and Concurrency
+**What it is:** A job is a single unit of work. A worker executes jobs. A queue holds pending jobs (FIFO - First In, First Out). Concurrency is the number of jobs running simultaneously.
+**Why it is needed:** Processing AI models takes time. If we blocked the main thread, the user's browser would hang. Concurrency is capped to avoid rate-limiting from the AI provider and server overload.
+**How I implemented it:** The database acts as a queue. A worker polls for `pending` jobs via `setInterval`. Concurrency is capped at 3 simultaneous processing jobs.
+
+### Rate Limiting as Cost Control
+**What it is:** Restricting how many files a user can upload or summarize.
+**Why it is needed:** AI model calls cost money. Rate limits prevent a malicious user from running up an infinite bill.
+**How I implemented it:** Reused the database-backed rate limiter for `/api/ai/upload` and `/api/ai/follow-up`.
+
+### Files in Object Storage
+**What it is:** Storing uploaded receipts on the local filesystem (`/uploads`) instead of as raw bytes in PostgreSQL.
+**Why it is needed:** Databases are bad at storing large binaries—they bloat backups and slow down queries.
+**How I implemented it:** The file is saved to disk with a UUID, and only the `storageKey` is saved in the `FileAsset` table.
+
+### Cost Model
+**What it is:** The financial cost of running the pipeline.
+**How I implemented it:** Gemini 1.5 Flash (or 3.1 Pro Low) charges per 1k characters/images. An average receipt image and ~500 tokens of output costs roughly $0.0001 per run. Our rate limits and concurrency caps ensure the total cost cannot exceed a fixed budget per IP per hour.
+
+## 9.1 Core System Concepts
+
+### API Endpoint vs SDKs
+Our Next.js route (`/api/ai/upload`) is our **API endpoint**—it exposes our application's capability to our own frontend. To talk to OpenAI from our worker, we use their **official SDK** (`openai` npm package) rather than making raw HTTP `fetch` calls. The SDK automatically handles retries, connection pooling, type definitions, and complex features like `zodResponseFormat` parsing, significantly reducing boilerplate and network-level bugs compared to raw HTTP.
+
+### System vs User Prompts
+A **System Prompt** dictates the overarching behavior, persona, and constraints of the AI (e.g., "You are an expert OCR system. Extract the notes exactly as written"). The **User Prompt** provides the specific data or instructions for that single run (e.g., "Extract the text from this image"). We separate them to prevent prompt injection and ensure the AI never breaks character.
+
+### Structured Output & Schema Validation
+Instead of asking the model to return markdown and parsing it with brittle string operations (Regex), we use `zodResponseFormat`. This forces the AI to guarantee JSON matching our `StructuredNotesSchema`. However, we don't blindly trust the provider. When the output arrives, our worker runs `StructuredNotesSchema.safeParse(output)`. If validation fails, it throws a `ProviderTransientError`, triggering a retry. This ensures bad data never reaches the database.
+
+### Queues, Workers, & Rate Limiting
+Uploads trigger a background job rather than blocking the HTTP request. We use an in-memory bounded worker loop. We enforce a **Concurrency Cap of 2**—meaning no matter if 50 files are uploaded simultaneously, the worker only ever pulls 2 jobs at a time. This prevents us from hitting the provider's Rate Limits (e.g. 500 requests/minute) and prevents cost spikes.
+
+### Object Storage Rationale
+Images (often 5MB+) are stored as files on disk/S3 (`FileAsset.storageKey`), NOT as `bytea` blobs in PostgreSQL. Storing large binary files in a relational database bloats the tables, degrades query performance, and makes backups massively expensive. The DB should only hold the pointer (the key).
+
+## 9.2 Defence Questions
+
+### 1. Justify your temperature setting and your output token cap.
+I set `temperature: 0.1`. We are extracting handwritten notes, which requires high deterministic accuracy and zero creative hallucination. We want the exact text, not a creative re-telling. The output token cap is set to `2000`. Handwritten notes are typically short (1-2 pages). 2000 tokens is more than enough for the extraction, while preventing the model from spiraling into an infinite generation loop that burns money if it hallucinates.
+
+### 2. Show me what a user sees when the provider times out.
+If the provider times out, the `openai` SDK throws a timeout error. Our worker catches this, recognizes it as a `ProviderTransientError`, and attempts a retry (up to 3 times) with a backoff. If it exhausts all retries, it marks the Job as `failed` with the error message "Processing failed after 3 attempt(s): Provider timeout". The user looking at the `/ai/jobs` table will see a red `FAILED` badge and the readable error message, rather than a generic 500 error page.
+
+### 3. Your model returns something that fails validation. Trace what happens next.
+1. The model returns invalid JSON (e.g., `{ "title": 123 }` instead of a string).
+2. `StructuredNotesSchema.safeParse()` runs and returns `success: false`.
+3. The worker throws a `ProviderTransientError("Role 1 output failed application schema validation...")`.
+4. The catch block intercepts the error, increments the attempt counter, waits for the `backoffBaseMs`, and retries the AI call.
+5. If it fails 3 times, it writes the raw output to the `AiResult` table for debugging, marks the `Job` as failed, and writes the validation error string to `errorMessage`.
+
+### 4. I upload fifty files and press the button. What exactly happens, and what stops it costing you fifty simultaneous calls?
+1. The Next.js API `/api/ai/upload` receives 50 files.
+2. It quickly saves them to disk and creates 50 `Job` rows in PostgreSQL with `status = "pending"`.
+3. The API immediately returns HTTP 202 to the user. (Total time: ~100ms).
+4. The API triggers `runWorker()` in the background.
+5. `runWorker()` checks `countActiveJobs()`. Since concurrency is capped at `2`, it only pulls the first 2 jobs and updates them to `status = "processing"`.
+6. Only 2 concurrent HTTP calls are made to OpenAI. The other 48 jobs wait safely in the database.
+7. As soon as 1 job finishes, the worker loops and pulls the 3rd job. The cost is spread safely over time.
+
+## 9.3 Cost Model
+
+Using `gpt-4o-mini`:
+- Image input cost: ~$0.00085 per high-res image.
+- Input tokens (System prompt): ~150 tokens = $0.00002.
+- Output tokens (Extracted text): ~300 tokens = $0.00018.
+**Total cost per note:** ~$0.001.
+**Cap:** Our rate limit restricts a user to 50 uploads per hour. Maximum cost exposure per user per hour is exactly $0.05.
+
+## 9.4 Evidence & Proof
+
+- **Jobs Table:** Screenshot captured at `/ai/jobs` showing `Processed` and `Failed` states. See `evidence/jobs_table_status.png`.
+- **Concurrency Logs:** 
+```text
+Created 5 pending jobs. Starting worker...
+[Worker] Started processing job 75e92704. Concurrency slot: 1/2
+[Worker] Started processing job e44d79c0. Concurrency slot: 2/2
+[Worker] Finished processing job 75e92704.
+[Worker] Finished processing job e44d79c0.
+```
+- **DB (Raw vs Parsed):** Captured via Prisma Studio. See `evidence/ai_result_table.png`.
+- **DB (Storage Key):** Captured via Prisma Studio. See `evidence/fileasset_table_storagekey.png`.

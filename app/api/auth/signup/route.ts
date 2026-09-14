@@ -97,6 +97,7 @@ export async function POST(request: Request) {
       );
     }
 
+    console.error('Signup error:', error);
     return NextResponse.json(
       { error: 'An unexpected error occurred. Please try again.' },
       { status: 500 }

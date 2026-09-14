@@ -45,6 +45,13 @@ export async function POST(request: Request) {
       );
     }
 
+    if (!user.isEmailVerified) {
+      return NextResponse.json(
+        { error: 'Please verify your email before signing in.' },
+        { status: 403 }
+      );
+    }
+
     await createSession(user.id);
 
     return NextResponse.json(
@@ -59,6 +66,7 @@ export async function POST(request: Request) {
       );
     }
 
+    console.error('Signin error:', error);
     return NextResponse.json(
       { error: 'An unexpected error occurred. Please try again.' },
       { status: 500 }
